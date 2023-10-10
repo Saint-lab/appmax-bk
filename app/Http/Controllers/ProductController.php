@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Product; 
+use Illuminate\Http\Response;
+use App\Models\Product;  
 
 class ProductController extends Controller
 {
@@ -14,7 +15,11 @@ class ProductController extends Controller
      */
     public function index()
     {
-       return Product::all();
+        $response = [
+        'status' => 'success',
+            'products' => Product::all(),
+        ];
+        return response($response, 200);
     }
 
     /**
@@ -29,7 +34,10 @@ class ProductController extends Controller
             'name' => 'required',
             'slug' => 'required'
         ]);
-        return Product::create($request->all());
+        Product::create($request->all());
+        $response = [
+        'status' => 'success',
+        ];
     }
 
     /**
@@ -41,7 +49,16 @@ class ProductController extends Controller
     public function show($id)
     {
         //
-        return Product::find($id);
+        $valid = Product::find($id);
+        if($valid){
+        $response = [
+        'status' => 'success',
+            'product' => Product::find($id),
+        ];
+        return response($response, 200);
+    }else{
+        return response(['status' => 'error'], 401);
+    }
     }
 
     /**
@@ -55,8 +72,15 @@ class ProductController extends Controller
     {
         //
         $product = Product::find($id);
+        if($product){
         $product->update($request->all());
-        return $product;
+        $response = [
+        'status' => 'success',
+         ];
+        return response($response, 200);
+       }else{
+        return response(['status' => 'error'], 401);
+       }
     }
 
     /**
@@ -68,7 +92,11 @@ class ProductController extends Controller
     public function destroy($id)
     {
         //
-        return Product::destroy($id);
+        Product::destroy($id);
+        $response = [
+        'status' => 'success',
+        ];
+        return response($response, 200);
     }
 
     /**
