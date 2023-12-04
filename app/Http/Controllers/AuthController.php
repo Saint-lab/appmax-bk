@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Setting;
+use App\Models\Settings;
 use App\Models\UserVerify;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -23,7 +23,7 @@ class AuthController extends Controller
     		'email' => 'required|string|unique:users,email',
             //'username' => 'required|string|unique:users,username',
     		'password' => 'required|string|confirmed'
-    	]);
+    	]); 
 
     	$user = User::create([
     		'name' => $fields['name'],
@@ -32,11 +32,9 @@ class AuthController extends Controller
     		'password' => bcrypt($fields['password'])
     	]);
 
-      // Setting::create([
-      //   'user_id' => $user->id,
-      //   'currency' => 'USD',
-      //   'lang' => 'English'
-      //  ]);
+      Settings::create([
+        'user_id' => $user->id,
+       ]);
        
       // $code = Str::random(64);
       //   UserVerify::create([
@@ -53,8 +51,8 @@ class AuthController extends Controller
 
     	$response = [
         'status' => 'success',
-    		'user' => $user,
-    		'token' => $token
+    		// 'user' => $user,
+    		// 'token' => $token
     	];
 
     	return response($response, 200);

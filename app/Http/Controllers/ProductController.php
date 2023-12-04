@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Models\Product;  
+use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
@@ -15,9 +16,10 @@ class ProductController extends Controller
      */
     public function index()
     {
+
         $response = [
         'status' => 'success',
-            'products' => Product::all(),
+            'products' => Product::where('user_id',auth()->user()->id)->get(),
         ];
         return response($response, 200);
     }
@@ -30,14 +32,50 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required',
-            'slug' => 'required'
+            'price' => 'required',
+            'des' => 'required',
+            'product_image' => 'required',
+            'product_image.*' => 'image|mimes:jpeg,png,jpg,gif|max:20048',
         ]);
-        Product::create($request->all());
+
+        if ($validator->fails()) {
+                  $response = [
+        'status' => 'error',
+        'message' => $validator->errors(),
+      ];
+    return response($response, 401);
+                }
+
+    if($request->hasFile('product_image')){
+      $arr = array();
+       $images = $request->product_image;
+      foreach ($images as $img) {
+        $file = $img;
+      $filename = time().'.'.$file->getClientOriginalExtension();
+      $file->move(public_path('images/product/'.auth()->user()->id.'/'), $filename);
+       //$arr[] = $filename; 
+       array_push($arr, $filename);
+      }
+     }
+        $product = Product::create([
+         'user_id' => auth()->user()->id,
+         'name'    => $request->name ?? '',
+         'price'   => $request->price ?? 0.0,
+         'des'     => $request->des ?? '',
+         'status'  => 1,
+         'images'  => json_encode($arr),  
+        ]);
+        if($product){
         $response = [
         'status' => 'success',
+        'product' => $product,
         ];
+        return response($response, 200);
+      }else{
+        return response(['status' => 'error', 'message' => 'Database error'], 401);
+      }
     }
 
     /**
@@ -53,12 +91,12 @@ class ProductController extends Controller
         if($valid){
         $response = [
         'status' => 'success',
-            'product' => Product::find($id),
+        'product' => Product::find($id),
         ];
         return response($response, 200);
-    }else{
+     }else{
         return response(['status' => 'error'], 401);
-    }
+     }
     }
 
     /**
@@ -70,16 +108,44 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+       
         $product = Product::find($id);
         if($product){
-        $product->update($request->all());
+          if($request->hasFile('product_image')){
+            
+      $arr = array();
+      $data = [];
+       $images = $request->product_image;
+      foreach ($images as $img) {
+        $file = $img;
+      $filename = time().'.'.$file->getClientOriginalExtension();
+      $file->move(public_path('images/product/'.auth()->user()->id.'/'), $filename);
+       array_push($arr, $filename);
+      }
+      $data['images'] = json_encode($arr);
+      //delet existing image from path
+            foreach (json_decode($product->images) as $dImg) {
+                $dfile = url('public/images/product/'.auth()->user()->id).'/'.$dImg;
+                if (file_exists($dfile)) {
+                    unlink($dfile);
+                    } 
+             }
+     } 
+     
+        //     
+       $data = [
+         'name'    => $request->name ?? '',
+         'price'   => $request->price ?? 0.0,
+         'des'     => $request->des ?? '',
+         ];
+        $product->update($data);
         $response = [
         'status' => 'success',
+        'message' => 'Product Update successful',
          ];
         return response($response, 200);
        }else{
-        return response(['status' => 'error'], 401);
+        return response(['status' => 'error', 'message' => 'Product not found in dataset'], 401);
        }
     }
 
@@ -108,6 +174,11 @@ class ProductController extends Controller
     public function search($name)
     {
         //
-        return Product::where('name', 'like', '%'.$name.'%')->get(); 
+        $response = [
+        'status' => 'success',
+        'products' => Product::where('name', 'like', '%'.$name.'%')->get(),
+        ];
+        return response($response, 200);
+         
     }
 }

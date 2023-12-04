@@ -27,7 +27,7 @@
                     
                         <div class="form-group" style="padding-top: 8px;">
                             <label>Upload Bot Banner (728x90)</label>
-                            <input type="file" class="form-control" name="user_image" id="img" placeholder="upload image" required>
+                            <input type="file" class="form-control" name="user_image[]" id="img" placeholder="upload image" multiple="multiple" required>
                             <small class="red">Image must be less than 4MB in size</small>
                         </div>
                         

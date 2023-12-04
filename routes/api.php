@@ -3,6 +3,8 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\BankController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\SendSmsMessageController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route; 
 
@@ -18,15 +20,15 @@ use Illuminate\Support\Facades\Route;
 */
 // Public route
 //Route::resource('products', ProductController::class);
- Route::post('/register',[AuthController::class, 'register']); 
+ Route::post('/register',[AuthController::class, 'register']);  
  Route::post('/login',[AuthController::class, 'login']); 
+ 
  Route::post('/account/verify/{token}',[AuthController::class, 'verifyAccount'])->name('verify.email');
+
  Route::post('/reset',[AuthController::class, 'reset']);
  Route::get('/password/reset/{token}',[AuthController::class, 'resetAccount'])->name('reset.password');
  Route::post('/password/reset',[AuthController::class, 'saveResetAccount']);
- // Route::get('/products', [ProductController::class, 'index']);
- // Route::get('/products/{id}', [ProductController::class, 'show']);
- // Route::get('/products/search/{name}', [ProductController::class, 'search']);    
+     
  
 // Route::group(['middleware' => ['auth:sanctum', 'is_verify_email']], function () {
 
@@ -59,12 +61,46 @@ use Illuminate\Support\Facades\Route;
  Route::post('/updateuser/{id}', [SettingsController::class, 'updatedUser']);
  Route::delete('/deleteuser/{id}',[SettingsController::class, 'deleteUser']);
 
- //Setting Route
+ //AutoResponder Route
  Route::get('/settings', [SettingsController::class, 'settings']);
  Route::post('/settings', [SettingsController::class, 'updateSetting']);
+ Route::get('/settings/optin/{account}', [SettingsController::class, 'addOptinEmail']);
+ Route::get('authorize/aweber', [SettingsController::class, 'authorizeApp']); 
+ Route::get('authorize/mailchimp', [SettingsController::class, 'authorizeMailch']);
+ Route::post('/settings/optin/getresponse', [SettingsController::class, 'getresponseApiKey']);
+ Route::get('optin/delete/{type}', [SettingsController::class, 'deleteOptinEmail']);
 
- // Route::post('/products',[ProductController::class, 'store']);
- // Route::put('/products/{id}',[ProductController::class, 'update']);
- // Route::delete('/products/{id}',[ProductController::class, 'destroy']);
+ //Products Route
+  Route::get('/products', [ProductController::class, 'index']);
+ Route::get('/products/{id}', [ProductController::class, 'show']);
+ Route::get('/products/search/{name}', [ProductController::class, 'search']);
+  Route::post('/products',[ProductController::class, 'store']);
+  Route::put('/products/{id}',[ProductController::class, 'update']);
+  Route::delete('/products/{id}',[ProductController::class, 'destroy']);
+
+  //Payment Route
+  Route::get('/get-stripeKey', [PaymentController::class, 'getStripeKeys']);
+  Route::post('/save-stripeKey',[PaymentController::class, 'postStripeKeys']);
+  Route::post('/paywithstripe',[PaymentController::class, 'stripePaymentPost']);
+  Route::get('/get-paypay', [PaymentController::class, 'getPaypayEmail']);
+  Route::post('/post-paypalEmail',[PaymentController::class, 'postPaypalEmail']);
+  Route::post('/paywithpaypal',[PaymentController::class, 'payWithPaypal']);
+
+  //SMS
+  Route::get('/get-twilio', [SettingsController::class, 'getTwilio']);
+  Route::post('/twilio-setting',[SettingsController::class, 'postTwilioSetting']);
+  Route::get('/get-numbers', [SendSmsMessageController::class, 'show']);
+  Route::post('/save-numbers', [SendSmsMessageController::class, 'storePhoneNumber']);
+  Route::post('/send-sms', [SendSmsMessageController::class, 'sendCustomMessage']);
+
+//Push Notification
+  Route::get('/get-push-notifacation-setting', [PaymentController::class, 'getPushNotificationSettings']);
+ Route::post('/save-push-notifacation-token', [PaymentController::class, 'updateToken']);
+Route::post('/send-push-notifacation', [PaymentController::class, 'sendNotification']);
+Route::post('/push-notifacation-setting', [PaymentController::class, 'pushNotificationSettings']);
+
+
+
+  //user logout
  Route::post('/logout',[AuthController::class, 'logout']);  
 });

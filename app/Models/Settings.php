@@ -11,4 +11,13 @@ class Settings extends Model
 
     protected $guarded = ['id'];
      protected $table = "user_settings";
+
+     protected $fillable = [
+   	    'user_id',
+        'google_key',
+        'twilio_number',
+        'twilio_sid',
+        'twilio_token',
+        
+    ];
 }
